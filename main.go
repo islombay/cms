@@ -10,5 +10,5 @@ func main() {
 
 	r := api.Init(db)
 
-	r.Run("localhost:8080")
+	r.Run("0.0.0.0:10000")
 }
