@@ -7,6 +7,7 @@ import (
 	"github.com/islombay/cms/model"
 	"gorm.io/gorm"
 	"net/http"
+	"os"
 )
 
 func (h *Handler) Login(c *gin.Context) {
@@ -14,8 +15,9 @@ func (h *Handler) Login(c *gin.Context) {
 }
 
 func (h *Handler) Logout(c *gin.Context) {
-	c.SetCookie("login", "", -1, "/", "localhost", false, true)
-	c.SetCookie("pwd", "", -1, "/", "localhost", false, true)
+	domain := firstOrDefault(os.Getenv("domain"), "localhost")
+	c.SetCookie("login", "", -1, "/", domain, false, true)
+	c.SetCookie("pwd", "", -1, "/", domain, false, true)
 	c.Redirect(http.StatusFound, "/login")
 }
 
@@ -42,7 +44,15 @@ func (h *Handler) LoginAPI(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie("login", user.Username, 3600, "/", "localhost", false, true)
-	c.SetCookie("pwd", user.Password, 3600, "/", "localhost", false, true)
+	domain := firstOrDefault(os.Getenv("domain"), "localhost")
+	c.SetCookie("login", user.Username, 3600, "/", domain, false, true)
+	c.SetCookie("pwd", user.Password, 3600, "/", domain, false, true)
 	c.JSON(http.StatusOK, gin.H{"success": true})
+}
+
+func firstOrDefault(f, s string) string {
+	if f == "" {
+		return s
+	}
+	return f
 }
