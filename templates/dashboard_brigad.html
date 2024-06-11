@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+        }
+        .header {
+            background-color: #007BFF;
+            color: #fff;
+            padding: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            margin: 0;
+            padding: 0 20px;
+        }
+        .header a {
+            color: #fff;
+            text-decoration: none;
+            padding: 0 20px;
+        }
+        .content {
+            padding: 20px;
+        }
+        .content h2 {
+            margin-top: 0;
+        }
+        .user-list {
+            margin-bottom: 20px;
+        }
+        .user-list table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .user-list table, .user-list th, .user-list td {
+            border: 1px solid #ccc;
+        }
+        .user-list th, .user-list td {
+            padding: 10px;
+            text-align: left;
+        }
+        .create-user-form,
+        .create-task-form {
+            margin-top: 20px;
+        }
+        .create-user-form label,
+        .create-task-form label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .create-user-form input,
+        .create-task-form input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .create-user-form button,
+        .create-task-form button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .create-user-form button:hover,
+        .create-task-form button:hover {
+            background-color: #0056b3;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:focus {
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+        /* Dropdown button */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        /* Dropdown content (hidden by default) */
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f1f1f1;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+
+        /* Links inside the dropdown */
+        .dropdown-content button {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        /* Change color of dropdown links on hover */
+        .dropdown-content button:hover {background-color: #ddd;}
+
+        /* Show the dropdown menu on hover */
+        .dropdown:hover .dropdown-content {display: block;}
+
+        /* Status button styles */
+        .status-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .status-done {
+            background-color: green;
+            color: #fff;
+        }
+
+        .status-doing {
+            background-color: red;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>Dashboard for SubPOD</h1>
+    <div>
+        <span>{{ .user.Username }} ({{ .user.Role }})</span>
+        <a href="/logout">Logout</a>
+    </div>
+</div>
+<div class="container">
+    <div class="content">
+        <h2>Available tasks</h2>
+        <div class="user-list">
+            <table>
+                <thead>
+                <tr>
+                    <th>NO</th>
+                    <th>Name</th>
+                    <th>Done</th>
+                    <th>Checked</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{ range .tasks }}
+                <tr>
+                    <td>{{ .OrderID }}</td>
+                    <td>{{ .Name }}</td>
+                    <td>{{ .IsDone }}</td>
+                    <td>{{ .IsChecked }}</td>
+                    <td><button onclick="takeTask({{ .ID }})">Take task</button></td>
+                </tr>
+                {{ end }}
+                </tbody>
+            </table>
+        </div>
+
+        <h2>Your tasks</h2>
+        <div class="user-list">
+            <table>
+                <thead>
+                <tr>
+                    <th>NO</th>
+                    <th>Name</th>
+                    <th>Done</th>
+                    <th>Checked</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{ range .mytasks }}
+                <tr>
+                    <td>{{ .OrderID }}</td>
+                    <td>{{ .Name }}</td>
+                    <td>{{ .IsDone }}</td>
+                    <td>{{ .IsChecked }}</td>
+                    <td>
+                        <div class="dropdown">
+                            <button class="status-button {{ if .IsDone }}status-done{{ else }}status-doing{{ end }}" id="status-button-{{ .ID }}">
+                            {{ if .IsDone }} Done {{else}} Doing {{end}}
+                            </button>
+                            <div class="dropdown-content">
+                                <button onclick="updateTaskStatus({{ .ID }}, 'done')">Done</button>
+                                <button onclick="updateTaskStatus({{ .ID }}, 'doing')">Doing</button>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {{ end }}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function takeTask(orderID) {
+            fetch('/api/assign/task', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id: orderID })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        location.reload();
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function updateTaskStatus(taskID, status) {
+            fetch('/api/task/status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id: taskID, status: status })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        const statusButton = document.getElementById('status-button-' + taskID);
+                        statusButton.textContent = status;
+                        if (status === 'Done') {
+                            statusButton.classList.remove('status-doing');
+                            statusButton.classList.add('status-done');
+                        } else {
+                            statusButton.classList.remove('status-done');
+                            statusButton.classList.add('status-doing');
+                        }
+
+                        location.reload()
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    </script>
+</div>
+</body>
+</html>

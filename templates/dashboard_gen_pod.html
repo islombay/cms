@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+        }
+        .header {
+            background-color: #007BFF;
+            color: #fff;
+            padding: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            margin: 0;
+            padding: 0 20px;
+        }
+        .header a {
+            color: #fff;
+            text-decoration: none;
+            padding: 0 20px;
+        }
+        .content {
+            padding: 20px;
+        }
+        .content h2 {
+            margin-top: 0;
+        }
+        .user-list {
+            margin-bottom: 20px;
+        }
+        .user-list table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .user-list table, .user-list th, .user-list td {
+            border: 1px solid #ccc;
+        }
+        .user-list th, .user-list td {
+            padding: 10px;
+            text-align: left;
+        }
+        .create-user-form {
+            margin-top: 20px;
+        }
+        .create-user-form label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .create-user-form input[type="text"],
+        .create-user-form input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .create-user-form button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .create-user-form button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>Dashboard for GenPOD</h1>
+    <div>
+        <span>{{ .user.Username }} ({{ .user.Role }})</span>
+        <a href="/logout">Logout</a>
+    </div>
+</div>
+<div class="container">
+    <div class="content">
+        <h2>SubPOD List</h2>
+        <div class="user-list">
+            <table>
+                <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Role</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{ range .users }}
+                <tr>
+                    <td>{{ .Username }}</td>
+                    <td>{{ .Role }}</td>
+                </tr>
+                {{ end }}
+                </tbody>
+            </table>
+        </div>
+
+        <h2>Create sub pod</h2>
+        <form class="create-user-form" id="createUserForm">
+            <label for="new-username">Username:</label>
+            <input type="text" id="new-username" name="username" required>
+
+            <label for="new-password">Password:</label>
+            <input type="password" id="new-password" name="password" required>
+
+            <button type="submit">Create User</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('createUserForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('new-username').value;
+            const password = document.getElementById('new-password').value;
+
+            fetch('/api/create/sub', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password,
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        location.reload();
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+    </script>
+</div>
+</body>
+</html>

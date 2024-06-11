@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+        }
+        .header {
+            background-color: #007BFF;
+            color: #fff;
+            padding: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            margin: 0;
+            padding: 0 20px;
+        }
+        .header a {
+            color: #fff;
+            text-decoration: none;
+            padding: 0 20px;
+        }
+        .content {
+            padding: 20px;
+        }
+        .content h2 {
+            margin-top: 0;
+        }
+        .user-list {
+            margin-bottom: 20px;
+        }
+        .user-list table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .user-list table, .user-list th, .user-list td {
+            border: 1px solid #ccc;
+        }
+        .user-list th, .user-list td {
+            padding: 10px;
+            text-align: left;
+        }
+        .status-done {
+            background-color: green;
+            color: #fff;
+            padding: 5px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .status-doing {
+            background-color: red;
+            color: #fff;
+            padding: 5px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .create-user-form,
+        .create-task-form {
+            margin-top: 20px;
+        }
+        .create-user-form label,
+        .create-task-form label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .create-user-form input,
+        .create-task-form input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .create-user-form button,
+        .create-task-form button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .create-user-form button:hover,
+        .create-task-form button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>Dashboard for SubPOD</h1>
+    <div>
+        <span>{{ .user.Username }} ({{ .user.Role }})</span>
+        <a href="/logout">Logout</a>
+    </div>
+</div>
+<div class="container">
+    <div class="content">
+        <h2>Brigadir List</h2>
+        <div class="user-list">
+            <table>
+                <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Role</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{ range .users }}
+                <tr>
+                    <td>{{ .Username }}</td>
+                    <td>{{ .Role }}</td>
+                </tr>
+                {{ end }}
+                </tbody>
+            </table>
+        </div>
+
+        <h2>Create brigadir</h2>
+        <form class="create-user-form" id="createUserForm">
+            <label for="new-username">Username:</label>
+            <input type="text" id="new-username" name="username" required>
+
+            <label for="new-password">Password:</label>
+            <input type="password" id="new-password" name="password" required>
+
+            <button type="submit">Create User</button>
+        </form>
+
+        <br><br> <hr><br><br>
+        <h2>Tasks List</h2>
+        <div class="user-list">
+            <table>
+                <thead>
+                <tr>
+                    <th>NO</th>
+                    <th>Name</th>
+                    <th>Responsible</th>
+                    <th>Status</th>
+                    <th>Checked</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{ range .tasks }}
+                <tr>
+                    <td>{{ .OrderID }}</td>
+                    <td>{{ .Name }}</td>
+                    <td>{{ if .Responsible }}{{ .User.Username }}{{ else }}-{{ end }}</td>
+                    <td>
+                        {{ if .IsDone }}
+                        <span class="status-done">Done</span>
+                        {{ else }}
+                        <span class="status-doing">Doing</span>
+                        {{ end }}
+                    </td>
+                    <td>{{ .IsChecked }}</td>
+                </tr>
+                {{ end }}
+                </tbody>
+            </table>
+        </div>
+
+        <h2>Create task</h2>
+        <form class="create-task-form" id="createTaskForm">
+            <label for="new-taskname">Name:</label>
+            <input type="text" id="new-taskname" name="name" required>
+
+            <button type="submit">Create Task</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('createUserForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const username = document.getElementById('new-username').value;
+            const password = document.getElementById('new-password').value;
+
+            fetch('/api/create/brigad', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password,
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        location.reload();
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('createTaskForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('new-taskname').value;
+
+            fetch('/api/create/task', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: name,
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        location.reload();
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+    </script>
+</div>
+</body>
+</html>
